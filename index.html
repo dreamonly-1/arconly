@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcSwap — DeFi on ARC Testnet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #06090f;
+            --bg-secondary: #0c1120;
+            --bg-card: rgba(14, 22, 40, 0.7);
+            --bg-card-hover: rgba(20, 30, 55, 0.85);
+            --border: rgba(56, 189, 248, 0.12);
+            --border-active: rgba(56, 189, 248, 0.35);
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.25);
+            --accent-secondary: #a78bfa;
+            --accent-tertiary: #34d399;
+            --native: #2775ca;
+            --native-light: rgba(39, 117, 202, 0.15);
+            --native-border: rgba(39, 117, 202, 0.3);
+            --text-primary: #f0f4ff;
+            --text-secondary: #94a3c8;
+            --text-muted: #4b5a78;
+            --danger: #f87171;
+            --warning: #fbbf24;
+            --success: #34d399;
+            --gradient-accent: linear-gradient(135deg, #38bdf8, #a78bfa);
+            --gradient-card: linear-gradient(160deg, rgba(14, 22, 40, 0.9), rgba(10, 15, 30, 0.95));
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(39, 117, 202, 0.07) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(167, 139, 250, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.03) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+
+        .logo { display: flex; align-items: center; gap: 12px; }
+
+        .logo-icon {
+            width: 40px; height: 40px;
+            background: var(--gradient-accent);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 18px;
+            color: var(--bg-primary);
+            font-family: 'Syne', sans-serif;
+        }
+
+        .logo-text {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800; font-size: 22px;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-badge {
+            font-size: 9px;
+            padding: 3px 8px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 20px;
+            color: var(--accent);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .header-right { display: flex; align-items: center; gap: 12px; }
+
+        .network-pill {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 16px;
+            background: var(--native-light);
+            border: 1px solid var(--native-border);
+            border-radius: 12px;
+            font-size: 12px; color: var(--text-secondary);
+        }
+
+        .network-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .native-badge {
+            font-size: 9px; font-weight: 600;
+            padding: 2px 6px;
+            background: var(--native);
+            color: #fff;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .btn-connect {
+            padding: 10px 24px;
+            background: var(--gradient-accent);
+            border: none; border-radius: 12px;
+            color: var(--bg-primary);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-connect:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-connect.connected {
+            background: rgba(39, 117, 202, 0.12);
+            border: 1px solid var(--native-border);
+            color: var(--accent);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex; gap: 16px;
+            margin-bottom: 28px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .stat-card {
+            flex: 1; min-width: 160px;
+            padding: 18px 20px;
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-active);
+            background: var(--bg-card-hover);
+        }
+
+        .stat-card.native-stat {
+            border-color: var(--native-border);
+            background: linear-gradient(160deg, rgba(14, 22, 45, 0.95), rgba(10, 15, 35, 0.95));
+        }
+
+        .stat-label {
+            font-size: 11px; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 22px;
+            color: var(--text-primary);
+        }
+
+        .stat-change {
+            font-size: 11px; color: var(--success);
+            margin-top: 4px;
+        }
+
+        .stat-change.negative { color: var(--danger); }
+
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        /* Tabs */
+        .tabs-container { margin-bottom: 24px; }
+
+        .tabs {
+            display: flex; gap: 4px;
+            background: rgba(14, 22, 40, 0.5);
+            padding: 5px; border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            flex: 1; padding: 12px 20px;
+            background: transparent; border: none;
+            color: var(--text-muted);
+            font-family: 'Syne', sans-serif;
+            font-weight: 600; font-size: 14px;
+            cursor: pointer; border-radius: 10px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+
+        .tab:hover {
+            color: var(--text-secondary);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .tab.active {
+            color: var(--bg-primary);
+            background: var(--gradient-accent);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .tab-panel { display: none; }
+
+        .tab-panel.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card */
+        .card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            backdrop-filter: blur(12px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 18px;
+        }
+
+        .card-settings {
+            width: 36px; height: 36px;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .card-settings:hover {
+            border-color: var(--border-active);
+            color: var(--accent);
+        }
+
+        /* Token Input */
+        .token-input-group {
+            background: rgba(6, 9, 15, 0.6);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .token-input-group:focus-within {
+            border-color: var(--border-active);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.08);
+        }
+
+        .token-input-group.native-token {
+            border-color: var(--native-border);
+        }
+
+        .token-input-group.native-token:focus-within {
+            box-shadow: 0 0 20px rgba(39, 117, 202, 0.12);
+        }
+
+        .token-input-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .token-input-label { font-size: 12px; color: var(--text-muted); }
+
+        .token-balance { font-size: 12px; color: var(--text-muted); }
+
+        .token-balance span {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .token-balance span:hover { color: var(--accent); }
+
+        .native-label {
+            font-size: 9px;
+            padding: 2px 6px;
+            background: var(--native-light);
+            border: 1px solid var(--native-border);
+            border-radius: 4px;
+            color: var(--native);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .token-input-bottom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .token-input-field {
+            flex: 1; background: none; border: none; outline: none;
+            color: var(--text-primary);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 26px;
+            min-width: 0;
+        }
+
+        .token-input-field::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .token-selector {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 14px;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .token-selector:hover {
+            border-color: var(--border-active);
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .token-icon {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
+            color: #fff;
+        }
+
+        .token-icon.eth { background: linear-gradient(135deg, #627eea, #3b5998); }
+        .token-icon.usdc { background: linear-gradient(135deg, #2775ca, #1a5bb5); }
+        .token-icon.usdt { background: linear-gradient(135deg, #26a17b, #1e8f6e); }
+        .token-icon.arc { background: var(--gradient-accent); }
+        .token-icon.dai { background: linear-gradient(135deg, #f5ac37, #e89928); }
+        .token-icon.wbtc { background: linear-gradient(135deg, #f7931a, #e8850f); }
+        .token-icon.native-usdc {
+            background: linear-gradient(135deg, #2775ca, #1a5bb5);
+            box-shadow: 0 0 8px rgba(39, 117, 202, 0.4);
+        }
+
+        .token-name {
+            font-weight: 600; font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .token-arrow { font-size: 10px; color: var(--text-muted); }
+
+        /* Swap Arrow */
+        .swap-arrow-container {
+            display: flex; justify-content: center;
+            position: relative;
+            height: 12px; margin: -2px 0;
+            z-index: 2;
+        }
+
+        .swap-arrow-btn {
+            width: 36px; height: 36px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--accent);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .swap-arrow-btn:hover {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: var(--border-active);
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        /* Swap Info */
+        .swap-info { padding: 12px 0; margin-top: 8px; }
+
+        .swap-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .swap-info-label { font-size: 12px; color: var(--text-muted); }
+
+        .swap-info-value { font-size: 12px; color: var(--text-secondary); }
+
+        .swap-info-value.highlight { color: var(--success); }
+
+        /* Action Button */
+        .btn-action {
+            width: 100%; padding: 16px;
+            border: none; border-radius: var(--radius-sm);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-action.primary {
+            background: var(--gradient-accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-action.primary:hover {
+            box-shadow: 0 8px 30px rgba(56, 189, 248, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.4; cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Slippage */
+        .slippage-settings {
+            display: none; padding: 16px 0 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .slippage-settings.show { display: block; }
+
+        .slippage-label { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+
+        .slippage-options { display: flex; gap: 8px; }
+
+        .slippage-btn {
+            padding: 8px 16px;
+            background: rgba(6, 9, 15, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: 'DM Mono', monospace;
+            font-size: 12px; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slippage-btn.active, .slippage-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        /* Right Panel */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            backdrop-filter: blur(12px);
+        }
+
+        .panel-card-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 15px;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .panel-card-title .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        /* Pool Item */
+        .pool-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(6, 9, 15, 0.5);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pool-item:hover {
+            border-color: var(--border-active);
+            background: rgba(14, 22, 40, 0.6);
+        }
+
+        .pool-item:last-child { margin-bottom: 0; }
+
+        .pool-pair { display: flex; align-items: center; gap: 8px; }
+
+        .pool-pair-icons { display: flex; }
+
+        .pool-pair-icons .token-icon { width: 28px; height: 28px; font-size: 10px; }
+        .pool-pair-icons .token-icon:nth-child(2) { margin-left: -8px; }
+
+        .pool-name { font-weight: 600; font-size: 13px; }
+
+        .pool-tvl { font-size: 11px; color: var(--text-muted); }
+
+        .pool-apy { text-align: right; }
+
+        .pool-apy-value {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 14px;
+            color: var(--success);
+        }
+
+        .pool-apy-label { font-size: 10px; color: var(--text-muted); }
+
+        /* TX Item */
+        .tx-item {
+            display: flex; align-items: center;
+            gap: 12px; padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tx-item:last-child { border-bottom: none; }
+
+        .tx-icon-wrap {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+        }
+
+        .tx-icon-wrap.swap { background: rgba(56, 189, 248, 0.1); color: var(--accent); }
+        .tx-icon-wrap.add { background: rgba(52, 211, 153, 0.1); color: var(--success); }
+        .tx-icon-wrap.stake { background: rgba(167, 139, 250, 0.1); color: var(--accent-secondary); }
+
+        .tx-details { flex: 1; }
+
+        .tx-type { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+
+        .tx-time { font-size: 10px; color: var(--text-muted); }
+
+        .tx-amount { text-align: right; }
+
+        .tx-amount-value { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+
+        .tx-amount-usd { font-size: 10px; color: var(--text-muted); }
+
+        /* LP Pair */
+        .lp-pair-display {
+            display: flex; align-items: center; gap: 12px;
+            padding: 16px;
+            background: rgba(6, 9, 15, 0.5);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+        }
+
+        .lp-pair-icons { display: flex; }
+        .lp-pair-icons .token-icon { width: 32px; height: 32px; font-size: 12px; }
+        .lp-pair-icons .token-icon:nth-child(2) { margin-left: -10px; }
+
+        .lp-pair-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 16px;
+        }
+
+        .lp-pair-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            border-radius: 6px;
+            color: var(--success);
+        }
+
+        /* Staking */
+        .staking-tier {
+            padding: 16px;
+            background: rgba(6, 9, 15, 0.5);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .staking-tier:hover { border-color: var(--border-active); }
+
+        .staking-tier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .tier-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+
+        .tier-apy {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 16px;
+            color: var(--success);
+        }
+
+        .tier-details {
+            display: flex; gap: 16px;
+            font-size: 11px; color: var(--text-muted);
+        }
+
+        .tier-detail-value { color: var(--text-secondary); }
+
+        .staking-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .staking-stat-box {
+            padding: 16px;
+            background: rgba(6, 9, 15, 0.5);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+
+        .staking-stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+
+        .staking-stat-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; }
+
+        .staking-stat-value.accent { color: var(--accent); }
+        .staking-stat-value.green { color: var(--success); }
+
+        .claim-section {
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.05), rgba(56, 189, 248, 0.05));
+            border: 1px solid rgba(52, 211, 153, 0.15);
+            border-radius: var(--radius-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        .claim-info { display: flex; flex-direction: column; }
+
+        .claim-label { font-size: 11px; color: var(--text-muted); }
+
+        .claim-value {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 18px;
+            color: var(--success);
+        }
+
+        .btn-claim {
+            padding: 10px 24px;
+            background: var(--success);
+            border: none; border-radius: 10px;
+            color: var(--bg-primary);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-claim:hover {
+            box-shadow: 0 6px 20px rgba(52, 211, 153, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            justify-content: center; align-items: center;
+        }
+
+        .modal-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            width: 90%; max-width: 420px;
+            max-height: 80vh; overflow-y: auto;
+        }
+
+        .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; margin-bottom: 20px; }
+
+        .token-list-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; border-radius: var(--radius-sm);
+            cursor: pointer; transition: all 0.2s ease;
+        }
+
+        .token-list-item:hover { background: rgba(56, 189, 248, 0.08); }
+
+        .token-list-name { font-weight: 600; font-size: 14px; }
+        .token-list-fullname { font-size: 11px; color: var(--text-muted); }
+        .token-list-bal { margin-left: auto; text-align: right; }
+        .token-list-bal-value { font-size: 13px; font-weight: 500; }
+        .token-list-bal-usd { font-size: 10px; color: var(--text-muted); }
+
+        /* Toast */
+        .toast-container {
+            position: fixed; top: 20px; right: 20px;
+            z-index: 200;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .toast {
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            backdrop-filter: blur(12px);
+            font-size: 13px;
+            display: flex; align-items: center; gap: 10px;
+            animation: slideIn 0.4s ease, fadeOut 0.4s ease 3s forwards;
+            max-width: 360px;
+        }
+
+        .toast.success { border-color: rgba(52, 211, 153, 0.3); }
+        .toast.error { border-color: rgba(248, 113, 113, 0.3); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .footer-links { display: flex; gap: 20px; }
+
+        .footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--accent); }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle; margin-right: 8px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .stats-bar { flex-wrap: nowrap; overflow-x: auto; }
+            header { flex-wrap: wrap; gap: 12px; }
+            .token-input-field { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <div class="logo-icon">A</div>
+                <span class="logo-text">ArcSwap</span>
+                <span class="logo-badge">ARC Testnet</span>
+            </div>
+            <div class="header-right">
+                <div class="network-pill">
+                    <span class="network-dot"></span>
+                    <span>ARC Testnet</span>
+                    <span class="native-badge">USDC Native</span>
+                </div>
+                <button class="btn-connect" id="btnConnect" onclick="connectWallet()">Connect Wallet</button>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card native-stat">
+                <div class="stat-label">Gas Token</div>
+                <div class="stat-value" style="color: var(--native);">USDC</div>
+                <div class="stat-change">Native Fee Token</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Value Locked</div>
+                <div class="stat-value">$2.47M</div>
+                <div class="stat-change">+12.4% (7d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">24h Volume</div>
+                <div class="stat-value">$384K</div>
+                <div class="stat-change">+8.7%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">ARC Price</div>
+                <div class="stat-value">0.42 USDC</div>
+                <div class="stat-change negative">-2.1%</div>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <div>
+                <!-- Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('swap', this)">⇄ Swap</button>
+                        <button class="tab" onclick="switchTab('liquidity', this)">⊕ Liquidity</button>
+                        <button class="tab" onclick="switchTab('staking', this)">⚡ Staking</button>
+                    </div>
+                </div>
+
+                <!-- SWAP -->
+                <div class="tab-panel active" id="panel-swap">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Swap Tokens</span>
+                            <button class="card-settings" onclick="toggleSlippage()">⚙</button>
+                        </div>
+
+                        <div class="slippage-settings" id="slippageSettings">
+                            <div class="slippage-label">Slippage Tolerance</div>
+                            <div class="slippage-options">
+                                <button class="slippage-btn" onclick="setSlippage(0.1, this)">0.1%</button>
+                                <button class="slippage-btn active" onclick="setSlippage(0.5, this)">0.5%</button>
+                                <button class="slippage-btn" onclick="setSlippage(1.0, this)">1.0%</button>
+                                <button class="slippage-btn" onclick="setSlippage(2.0, this)">2.0%</button>
+                            </div>
+                        </div>
+
+                        <!-- From Token -->
+                        <div class="token-input-group native-token" id="swapFromGroup">
+                            <div class="token-input-top">
+                                <span class="token-input-label">From</span>
+                                <span class="token-balance">Balance: <span onclick="setMaxSwap()">5,000.00</span></span>
+                            </div>
+                            <div class="token-input-bottom">
+                                <input type="number" class="token-input-field" placeholder="0.00" id="swapFromAmount" oninput="calculateSwap()">
+                                <div class="token-selector" onclick="openTokenModal('from')">
+                                    <span class="token-icon native-usdc">$</span>
+                                    <span class="token-name" id="swapFromToken">USDC</span>
+                                    <span class="token-arrow">▾</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="swap-arrow-container">
+                            <button class="swap-arrow-btn" onclick="swapTokens()">↓</button>
+                        </div>
+
+                        <!-- To Token -->
+                        <div class="token-input-group" id="swapToGroup">
+                            <div class="token-input-top">
+                                <span class="token-input-label">To</span>
+                                <span class="token-balance">Balance: <span>3,520.00</span></span>
+                            </div>
+                            <div class="token-input-bottom">
+                                <input type="number" class="token-input-field" placeholder="0.00" id="swapToAmount" readonly>
+                                <div class="token-selector" onclick="openTokenModal('to')">
+                                    <span class="token-icon arc">A</span>
+                                    <span class="token-name" id="swapToToken">ARC</span>
+                                    <span class="token-arrow">▾</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Swap Info -->
+                        <div class="swap-info" id="swapInfo" style="display:none;">
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Rate</span>
+                                <span class="swap-info-value" id="swapRate">1 USDC = 2.38 ARC</span>
+                            </div>
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Price Impact</span>
+                                <span class="swap-info-value highlight">&lt;0.01%</span>
+                            </div>
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Min. Received</span>
+                                <span class="swap-info-value" id="swapMinReceive">2.37 ARC</span>
+                            </div>
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Gas Fee</span>
+                                <span class="swap-info-value" id="swapGasFee">~0.002 USDC</span>
+                            </div>
+                        </div>
+
+                        <button class="btn-action primary" id="btnSwap" onclick="executeSwap()">Connect Wallet to Swap</button>
+                    </div>
+                </div>
+
+                <!-- LIQUIDITY -->
+                <div class="tab-panel" id="panel-liquidity">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Add Liquidity</span>
+                            <button class="card-settings">⚙</button>
+                        </div>
+
+                        <div class="lp-pair-display">
+                            <div class="lp-pair-icons">
+                                <span class="token-icon native-usdc">$</span>
+                                <span class="token-icon arc">A</span>
+                            </div>
+                            <div>
+                                <div class="lp-pair-name">USDC / ARC</div>
+                            </div>
+                            <span class="lp-pair-badge">Active</span>
+                        </div>
+
+                        <!-- Token A -->
+                        <div class="token-input-group native-token" style="margin-bottom:0; border-radius: var(--radius-sm) var(--radius-sm) 0 0;">
+                            <div class="token-input-top">
+                                <span class="token-input-label">Token A</span>
+                                <span class="token-balance">Balance: <span>5,000.00</span></span>
+                            </div>
+                            <div class="token-input-bottom">
+                                <input type="number" class="token-input-field" placeholder="0.00" id="lpToken1" oninput="calculateLP()">
+                                <div class="token-selector">
+                                    <span class="token-icon native-usdc">$</span>
+                                    <span class="token-name">USDC</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="swap-arrow-container">
+                            <button class="swap-arrow-btn" style="font-size:14px;">＋</button>
+                        </div>
+
+                        <!-- Token B -->
+                        <div class="token-input-group" style="margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
+                            <div class="token-input-top">
+                                <span class="token-input-label">Token B</span>
+                                <span class="token-balance">Balance: <span>3,520.00</span></span>
+                            </div>
+                            <div class="token-input-bottom">
+                                <input type="number" class="token-input-field" placeholder="0.00" id="lpToken2" oninput="calculateLP2()">
+                                <div class="token-selector">
+                                    <span class="token-icon arc">A</span>
+                                    <span class="token-name">ARC</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="swap-info" id="lpInfo" style="display:none;">
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Pool Share</span>
+                                <span class="swap-info-value" id="lpShare">0.05%</span>
+                            </div>
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">LP Tokens Received</span>
+                                <span class="swap-info-value" id="lpTokens">~12.45 LP</span>
+                            </div>
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Pool APY</span>
+                                <span class="swap-info-value highlight">18.3%</span>
+                            </div>
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Gas Fee</span>
+                                <span class="swap-info-value">~0.005 USDC</span>
+                            </div>
+                        </div>
+
+                        <button class="btn-action primary" id="btnAddLP" onclick="addLiquidity()">Connect Wallet to Add Liquidity</button>
+                    </div>
+                </div>
+
+                <!-- STAKING -->
+                <div class="tab-panel" id="panel-staking">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Stake ARC</span>
+                        </div>
+
+                        <div class="staking-stats">
+                            <div class="staking-stat-box">
+                                <div class="staking-stat-label">Your Staked</div>
+                                <div class="staking-stat-value accent">2,450 ARC</div>
+                            </div>
+                            <div class="staking-stat-box">
+                                <div class="staking-stat-label">Total Earned</div>
+                                <div class="staking-stat-value green">142.35 ARC</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <div class="staking-tier">
+                                <div class="staking-tier-header">
+                                    <span class="tier-name">🟢 Flexible</span>
+                                    <span class="tier-apy">8.5% APY</span>
+                                </div>
+                                <div class="tier-details">
+                                    <span>Lock: <span class="tier-detail-value">None</span></span>
+                                    <span>Min: <span class="tier-detail-value">100 ARC</span></span>
+                                </div>
+                            </div>
+                            <div class="staking-tier" style="border-color: rgba(56, 189, 248, 0.2);">
+                                <div class="staking-tier-header">
+                                    <span class="tier-name">🔵 30 Days</span>
+                                    <span class="tier-apy">15.2% APY</span>
+                                </div>
+                                <div class="tier-details">
+                                    <span>Lock: <span class="tier-detail-value">30 days</span></span>
+                                    <span>Min: <span class="tier-detail-value">500 ARC</span></span>
+                                </div>
+                            </div>
+                            <div class="staking-tier">
+                                <div class="staking-tier-header">
+                                    <span class="tier-name">🟣 90 Days</span>
+                                    <span class="tier-apy">28.7% APY</span>
+                                </div>
+                                <div class="tier-details">
+                                    <span>Lock: <span class="tier-detail-value">90 days</span></span>
+                                    <span>Min: <span class="tier-detail-value">1,000 ARC</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="token-input-group native-token">
+                            <div class="token-input-top">
+                                <span class="token-input-label">Amount to Stake</span>
+                                <span class="token-balance">Balance: <span onclick="document.getElementById('stakeAmount').value=3520;calculateRewards()">3,520 ARC</span></span>
+                            </div>
+                            <div class="token-input-bottom">
+                                <input type="number" class="token-input-field" placeholder="0.00" id="stakeAmount" oninput="calculateRewards()">
+                                <div class="token-selector">
+                                    <span class="token-icon arc">A</span>
+                                    <span class="token-name">ARC</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button class="slippage-btn" onclick="selectTier('flexible', this)" style="flex:1; padding:10px;">Flexible</button>
+                            <button class="slippage-btn active" onclick="selectTier('30d', this)" style="flex:1; padding:10px;">30 Days</button>
+                            <button class="slippage-btn" onclick="selectTier('90d', this)" style="flex:1; padding:10px;">90 Days</button>
+                        </div>
+
+                        <div class="swap-info" id="rewardsInfo" style="display:none;">
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Est. Daily Reward</span>
+                                <span class="swap-info-value highlight" id="dailyReward">0 ARC</span>
+                            </div>
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Est. Monthly Reward</span>
+                                <span class="swap-info-value" id="monthlyReward">0 ARC</span>
+                            </div>
+                            <div class="swap-info-row">
+                                <span class="swap-info-label">Gas Fee</span>
+                                <span class="swap-info-value">~0.003 USDC</span>
+                            </div>
+                        </div>
+
+                        <button class="btn-action primary" onclick="executeStake()">Connect Wallet to Stake</button>
+
+                        <div class="claim-section">
+                            <div class="claim-info">
+                                <span class="claim-label">Pending Rewards</span>
+                                <span class="claim-value">12.45 ARC</span>
+                            </div>
+                            <button class="btn-claim" onclick="claimRewards()">Claim</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Top Pools -->
+                <div class="panel-card">
+                    <div class="panel-card-title"><span class="dot"></span> Top Pools</div>
+
+                    <div class="pool-item">
+                        <div class="pool-pair">
+                            <div class="pool-pair-icons">
+                                <span class="token-icon native-usdc">$</span>
+                                <span class="token-icon arc">A</span>
+                            </div>
+                            <div>
+                                <div class="pool-name">USDC / ARC</div>
+                                <div class="pool-tvl">TVL: $1.24M</div>
+                            </div>
+                        </div>
+                        <div class="pool-apy">
+                            <div class="pool-apy-value">18.3%</div>
+                            <div class="pool-apy-label">APY</div>
+                        </div>
+                    </div>
+
+                    <div class="pool-item">
+                        <div class="pool-pair">
+                            <div class="pool-pair-icons">
+                                <span class="token-icon native-usdc">$</span>
+                                <span class="token-icon eth">Ξ</span>
+                            </div>
+                            <div>
+                                <div class="pool-name">USDC / ETH</div>
+                                <div class="pool-tvl">TVL: $680K</div>
+                            </div>
+                        </div>
+                        <div class="pool-apy">
+                            <div class="pool-apy-value">12.1%</div>
+                            <div class="pool-apy-label">APY</div>
+                        </div>
+                    </div>
+
+                    <div class="pool-item">
+                        <div class="pool-pair">
+                            <div class="pool-pair-icons">
+                                <span class="token-icon eth">Ξ</span>
+                                <span class="token-icon arc">A</span>
+                            </div>
+                            <div>
+                                <div class="pool-name">ETH / ARC</div>
+                                <div class="pool-tvl">TVL: $420K</div>
+                            </div>
+                        </div>
+                        <div class="pool-apy">
+                            <div class="pool-apy-value">24.6%</div>
+                            <div class="pool-apy-label">APY</div>
+                        </div>
+                    </div>
+
+                    <div class="pool-item">
+                        <div class="pool-pair">
+                            <div class="pool-pair-icons">
+                                <span class="token-icon native-usdc">$</span>
+                                <span class="token-icon wbtc">B</span>
+                            </div>
+                            <div>
+                                <div class="pool-name">USDC / WBTC</div>
+                                <div class="pool-tvl">TVL: $130K</div>
+                            </div>
+                        </div>
+                        <div class="pool-apy">
+                            <div class="pool-apy-value">9.8%</div>
+                            <div class="pool-apy-label">APY</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="panel-card">
+                    <div class="panel-card-title"><span class="dot"></span> Recent Activity</div>
+
+                    <div class="tx-item">
+                        <div class="tx-icon-wrap swap">⇄</div>
+                        <div class="tx-details">
+                            <div class="tx-type">Swap USDC → ARC</div>
+                            <div class="tx-time">2 min ago · Fee: 0.002 USDC</div>
+                        </div>
+                        <div class="tx-amount">
+                            <div class="tx-amount-value">500 USDC</div>
+                            <div class="tx-amount-usd">$500.00</div>
+                        </div>
+                    </div>
+
+                    <div class="tx-item">
+                        <div class="tx-icon-wrap add">⊕</div>
+                        <div class="tx-details">
+                            <div class="tx-type">Add Liquidity USDC/ARC</div>
+                            <div class="tx-time">15 min ago · Fee: 0.005 USDC</div>
+                        </div>
+                        <div class="tx-amount">
+                            <div class="tx-amount-value">1,200 USDC</div>
+                            <div class="tx-amount-usd">$1,200.00</div>
+                        </div>
+                    </div>
+
+                    <div class="tx-item">
+                        <div class="tx-icon-wrap stake">⚡</div>
+                        <div class="tx-details">
+                            <div class="tx-type">Stake ARC (30D)</div>
+                            <div class="tx-time">1 hr ago · Fee: 0.003 USDC</div>
+                        </div>
+                        <div class="tx-amount">
+                            <div class="tx-amount-value">2,450 ARC</div>
+                            <div class="tx-amount-usd">~$1,029</div>
+                        </div>
+                    </div>
+
+                    <div class="tx-item">
+                        <div class="tx-icon-wrap swap">⇄</div>
+                        <div class="tx-details">
+                            <div class="tx-type">Swap ETH → USDC</div>
+                            <div class="tx-time">3 hr ago · Fee: 0.002 USDC</div>
+                        </div>
+                        <div class="tx-amount">
+                            <div class="tx-amount-value">0.25 ETH</div>
+                            <div class="tx-amount-usd">~$525</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Info -->
+                <div class="panel-card">
+                    <div class="panel-card-title"><span class="dot" style="background: var(--native);"></span> ARC Testnet</div>
+                    <div class="swap-info" style="padding: 0;">
+                        <div class="swap-info-row">
+                            <span class="swap-info-label">Chain ID</span>
+                            <span class="swap-info-value">0x2105 (8453)</span>
+                        </div>
+                        <div class="swap-info-row">
+                            <span class="swap-info-label">Currency</span>
+                            <span class="swap-info-value" style="color: var(--native); font-weight: 600;">USDC</span>
+                        </div>
+                        <div class="swap-info-row">
+                            <span class="swap-info-label">RPC URL</span>
+                            <span class="swap-info-value" style="font-size:10px;">https://rpc.arc.network</span>
+                        </div>
+                        <div class="swap-info-row">
+                            <span class="swap-info-label">Explorer</span>
+                            <span class="swap-info-value" style="color:var(--accent);cursor:pointer;">testnet.arcscan.io</span>
+                        </div>
+                        <div class="swap-info-row">
+                            <span class="swap-info-label">Faucet</span>
+                            <span class="swap-info-value" style="color:var(--accent);cursor:pointer;">faucet.arc.network</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <span>ArcSwap © 2026 — Built on ARC Testnet · Gas fees paid in USDC</span>
+            <div class="footer-links">
+                <a href="#">Docs</a>
+                <a href="#">GitHub</a>
+                <a href="#">Discord</a>
+                <a href="#">Twitter</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Token Modal -->
+    <div class="modal-overlay" id="tokenModal">
+        <div class="modal">
+            <div class="modal-title">Select Token</div>
+
+            <div class="token-list-item" onclick="selectToken('USDC','usdc','5,000.00','$5,000')">
+                <span class="token-icon native-usdc">$</span>
+                <div>
+                    <div class="token-list-name">USDC <span class="native-label" style="margin-left:4px;">Native</span></div>
+                    <div class="token-list-fullname">USD Coin · Gas Token</div>
+                </div>
+                <div class="token-list-bal">
+                    <div class="token-list-bal-value">5,000.00</div>
+                    <div class="token-list-bal-usd">$5,000</div>
+                </div>
+            </div>
+
+            <div class="token-list-item" onclick="selectToken('ARC','arc','3,520.00','$1,478')">
+                <span class="token-icon arc">A</span>
+                <div>
+                    <div class="token-list-name">ARC</div>
+                    <div class="token-list-fullname">ARC Token</div>
+                </div>
+                <div class="token-list-bal">
+                    <div class="token-list-bal-value">3,520.00</div>
+                    <div class="token-list-bal-usd">~1,478 USDC</div>
+                </div>
+            </div>
+
+            <div class="token-list-item" onclick="selectToken('ETH','eth','1.245','~2,614 USDC')">
+                <span class="token-icon eth">Ξ</span>
+                <div>
+                    <div class="token-list-name">ETH</div>
+                    <div class="token-list-fullname">Ethereum (Bridged)</div>
+                </div>
+                <div class="token-list-bal">
+                    <div class="token-list-bal-value">1.245</div>
+                    <div class="token-list-bal-usd">~2,614 USDC</div>
+                </div>
+            </div>
+
+            <div class="token-list-item" onclick="selectToken('WBTC','wbtc','0.542','~16,260 USDC')">
+                <span class="token-icon wbtc">B</span>
+                <div>
+                    <div class="token-list-name">WBTC</div>
+                    <div class="token-list-fullname">Wrapped Bitcoin</div>
+                </div>
+                <div class="token-list-bal">
+                    <div class="token-list-bal-value">0.542</div>
+                    <div class="token-list-bal-usd">~16,260 USDC</div>
+                </div>
+            </div>
+
+            <div class="token-list-item" onclick="selectToken('DAI','dai','2,340.00','~2,340 USDC')">
+                <span class="token-icon dai">D</span>
+                <div>
+                    <div class="token-list-name">DAI</div>
+                    <div class="token-list-fullname">Dai Stablecoin</div>
+                </div>
+                <div class="token-list-bal">
+                    <div class="token-list-bal-value">2,340.00</div>
+                    <div class="token-list-bal-usd">~2,340 USDC</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        let walletConnected = false;
+        let selectedTokenType = 'from';
+        let currentSlippage = 0.5;
+        let selectedTier = '30d';
+
+        const prices = { ARC: 0.42, ETH: 2100, USDC: 1, DAI: 1, WBTC: 30000 };
+        const rates = {
+            'USDC-ARC': 2.38, 'ARC-USDC': 0.42,
+            'USDC-ETH': 0.000476, 'ETH-USDC': 2100,
+            'USDC-WBTC': 0.0000333, 'WBTC-USDC': 30000,
+            'USDC-DAI': 1, 'DAI-USDC': 1,
+            'ETH-ARC': 5000, 'ARC-ETH': 0.0002,
+            'ETH-WBTC': 0.0143, 'WBTC-ETH': 70,
+            'ARC-DAI': 2.38, 'DAI-ARC': 0.42,
+            'ETH-DAI': 2100, 'DAI-ETH': 0.000476,
+            'WBTC-ARC': 71428, 'ARC-WBTC': 0.000014,
+            'WBTC-DAI': 30000, 'DAI-WBTC': 0.0000333,
+        };
+
+        const tierAPY = { flexible: 8.5, '30d': 15.2, '90d': 28.7 };
+
+        function connectWallet() {
+            const btn = document.getElementById('btnConnect');
+            if (walletConnected) {
+                walletConnected = false;
+                btn.textContent = 'Connect Wallet';
+                btn.classList.remove('connected');
+                updateButtons();
+                showToast('Wallet disconnected', 'error');
+                return;
+            }
+            btn.innerHTML = '<span class="spinner"></span> Connecting...';
+            setTimeout(() => {
+                walletConnected = true;
+                btn.textContent = '0x7a3F...9e2B';
+                btn.classList.add('connected');
+                updateButtons();
+                showToast('Wallet connected — ARC Testnet (USDC native)', 'success');
+            }, 1500);
+        }
+
+        function updateButtons() {
+            document.getElementById('btnSwap').textContent = walletConnected ? 'Swap' : 'Connect Wallet to Swap';
+            document.getElementById('btnAddLP').textContent = walletConnected ? 'Add Liquidity' : 'Connect Wallet to Add Liquidity';
+        }
+
+        function switchTab(name, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('panel-' + name).classList.add('active');
+        }
+
+        function toggleSlippage() {
+            document.getElementById('slippageSettings').classList.toggle('show');
+        }
+
+        function setSlippage(val, el) {
+            currentSlippage = val;
+            document.querySelectorAll('.slippage-options .slippage-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            calculateSwap();
+        }
+
+        function calculateSwap() {
+            const amount = parseFloat(document.getElementById('swapFromAmount').value);
+            const from = document.getElementById('swapFromToken').textContent;
+            const to = document.getElementById('swapToToken').textContent;
+            const key = from + '-' + to;
+            const rate = rates[key] || 1;
+
+            if (amount > 0) {
+                const result = (amount * rate).toFixed(4);
+                document.getElementById('swapToAmount').value = result;
+                document.getElementById('swapInfo').style.display = 'block';
+                document.getElementById('swapRate').textContent = `1 ${from} = ${rate} ${to}`;
+                document.getElementById('swapMinReceive').textContent = `${(result * (1 - currentSlippage / 100)).toFixed(4)} ${to}`;
+                // gas always in USDC
+                document.getElementById('swapGasFee').textContent = '~0.002 USDC';
+            } else {
+                document.getElementById('swapToAmount').value = '';
+                document.getElementById('swapInfo').style.display = 'none';
+            }
+        }
+
+        function swapTokens() {
+            const from = document.getElementById('swapFromToken');
+            const to = document.getElementById('swapToToken');
+            [from.textContent, to.textContent] = [to.textContent, from.textContent];
+            // Toggle native-token border
+            document.getElementById('swapFromGroup').classList.toggle('native-token', from.textContent === 'USDC');
+            document.getElementById('swapToGroup').classList.toggle('native-token', to.textContent === 'USDC');
+            calculateSwap();
+        }
+
+        function setMaxSwap() {
+            document.getElementById('swapFromAmount').value = 5000;
+            calculateSwap();
+        }
+
+        function executeSwap() {
+            if (!walletConnected) { showToast('Please connect your wallet first', 'error'); return; }
+            const amount = document.getElementById('swapFromAmount').value;
+            if (!amount || amount <= 0) { showToast('Enter an amount to swap', 'error'); return; }
+            const btn = document.getElementById('btnSwap');
+            btn.innerHTML = '<span class="spinner"></span> Swapping...';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.textContent = 'Swap'; btn.disabled = false;
+                showToast(`Swapped successfully! Gas: 0.002 USDC`, 'success');
+                document.getElementById('swapFromAmount').value = '';
+                document.getElementById('swapToAmount').value = '';
+                document.getElementById('swapInfo').style.display = 'none';
+            }, 2000);
+        }
+
+        function openTokenModal(type) {
+            selectedTokenType = type;
+            document.getElementById('tokenModal').classList.add('show');
+        }
+
+        function selectToken(name, cls, bal, usd) {
+            if (selectedTokenType === 'from') {
+                document.getElementById('swapFromToken').textContent = name;
+                document.getElementById('swapFromGroup').classList.toggle('native-token', name === 'USDC');
+            } else {
+                document.getElementById('swapToToken').textContent = name;
+                document.getElementById('swapToGroup').classList.toggle('native-token', name === 'USDC');
+            }
+            document.getElementById('tokenModal').classList.remove('show');
+            calculateSwap();
+        }
+
+        document.getElementById('tokenModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('show');
+        });
+
+        function calculateLP() {
+            const v = parseFloat(document.getElementById('lpToken1').value);
+            if (v > 0) {
+                document.getElementById('lpToken2').value = (v * 2.38).toFixed(2);
+                document.getElementById('lpInfo').style.display = 'block';
+            } else {
+                document.getElementById('lpToken2').value = '';
+                document.getElementById('lpInfo').style.display = 'none';
+            }
+        }
+
+        function calculateLP2() {
+            const v = parseFloat(document.getElementById('lpToken2').value);
+            if (v > 0) {
+                document.getElementById('lpToken1').value = (v / 2.38).toFixed(2);
+                document.getElementById('lpInfo').style.display = 'block';
+            } else {
+                document.getElementById('lpToken1').value = '';
+                document.getElementById('lpInfo').style.display = 'none';
+            }
+        }
+
+        function addLiquidity() {
+            if (!walletConnected) { showToast('Please connect your wallet first', 'error'); return; }
+            const amount = document.getElementById('lpToken1').value;
+            if (!amount || amount <= 0) { showToast('Enter an amount', 'error'); return; }
+            const btn = document.getElementById('btnAddLP');
+            btn.innerHTML = '<span class="spinner"></span> Adding...';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.textContent = 'Add Liquidity'; btn.disabled = false;
+                showToast('Liquidity added! Gas: 0.005 USDC', 'success');
+                document.getElementById('lpToken1').value = '';
+                document.getElementById('lpToken2').value = '';
+                document.getElementById('lpInfo').style.display = 'none';
+            }, 2500);
+        }
+
+        function selectTier(tier, el) {
+            selectedTier = tier;
+            document.querySelectorAll('#panel-staking .slippage-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            calculateRewards();
+        }
+
+        function calculateRewards() {
+            const amount = parseFloat(document.getElementById('stakeAmount').value);
+            if (amount > 0) {
+                const apy = tierAPY[selectedTier] / 100;
+                document.getElementById('dailyReward').textContent = (amount * apy / 365).toFixed(2) + ' ARC';
+                document.getElementById('monthlyReward').textContent = (amount * apy / 12).toFixed(2) + ' ARC';
+                document.getElementById('rewardsInfo').style.display = 'block';
+            } else {
+                document.getElementById('rewardsInfo').style.display = 'none';
+            }
+        }
+
+        function executeStake() {
+            if (!walletConnected) { showToast('Please connect your wallet first', 'error'); return; }
+            const amount = document.getElementById('stakeAmount').value;
+            if (!amount || amount <= 0) { showToast('Enter an amount to stake', 'error'); return; }
+            showToast('Confirming staking tx...', 'success');
+            setTimeout(() => {
+                showToast(`Staked ${amount} ARC! Gas: 0.003 USDC`, 'success');
+                document.getElementById('stakeAmount').value = '';
+                document.getElementById('rewardsInfo').style.display = 'none';
+            }, 2000);
+        }
+
+        function claimRewards() {
+            if (!walletConnected) { showToast('Please connect your wallet first', 'error'); return; }
+            showToast('Claiming rewards...', 'success');
+            setTimeout(() => showToast('12.45 ARC claimed! Gas: 0.001 USDC', 'success'), 1500);
+        }
+
+        function showToast(msg, type) {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast ' + type;
+            const icon = type === 'success' ? '✓' : '✕';
+            const color = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            t.innerHTML = `<span style="color:${color};font-weight:700;font-size:16px;">${icon}</span> ${msg}`;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3500);
+        }
+
+        updateButtons();
+    </script>
+</body>
+</html>
